@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Tomcat," />
+
+
+
+
+  
+
+
+  <link rel="alternate" href="/atom.xml" title="flyingzc's blog" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="tomcat 启动启动流程1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636465666768697071727374757677787980818283848586878889909192939495969798">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Tomcat启动流程">
+<meta property="og:url" content="http://yoursite.com/2019/12/19/01no/tomcat/tomcat02-start/index.html">
+<meta property="og:site_name" content="flyingzc&#39;s blog">
+<meta property="og:description" content="tomcat 启动启动流程1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636465666768697071727374757677787980818283848586878889909192939495969798">
+<meta property="article:published_time" content="2019-12-18T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-03-14T03:56:51.422Z">
+<meta property="article:author" content="flyingzc">
+<meta property="article:tag" content="Tomcat">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/12/19/01no/tomcat/tomcat02-start/"/>
+
+
+
+
+
+  <title>Tomcat启动流程 | flyingzc's blog</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <a href="https://github.com/FlyingZC" target="_blank" rel="noopener" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">flyingzc's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/19/01no/tomcat/tomcat02-start/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="flyingzc">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/zc-icon.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="flyingzc's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Tomcat启动流程</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-12-19T00:00:00+08:00">
+                2019-12-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Tomcat/" itemprop="url" rel="index">
+                    <span itemprop="name">Tomcat</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/12/19/01no/tomcat/tomcat02-start/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2019/12/19/01no/tomcat/tomcat02-start/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2019/12/19/01no/tomcat/tomcat02-start/" class="leancloud_visitors" data-flag-title="Tomcat启动流程">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="tomcat-启动"><a href="#tomcat-启动" class="headerlink" title="tomcat 启动"></a>tomcat 启动</h1><h2 id="启动流程"><a href="#启动流程" class="headerlink" title="启动流程"></a>启动流程</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br></pre></td><td class="code"><pre><span class="line">- Bootstrap.main()</span><br><span class="line">    - Bootstrap bootstrap &#x3D; new Bootstrap(); 实例化Bootstrap实例</span><br><span class="line">    - bootstrap.init(); 1.设置catalinaHome和catalinaBase 2.初始化类加载器,实例化**ClassLoaders</span><br><span class="line">        - setCatalinaHome(); 设置Catalina path,System.getProperty(&quot;catalina.home&quot;),值为tomcat根目录</span><br><span class="line">        - setCatalinaBase(); 值为D:\workspace-e3\.metadata\.plugins\org.eclipse.wst.server.core\tmp2</span><br><span class="line">        - initClassLoaders(); 实例化**ClassLoaders，创建URLClassLoader</span><br><span class="line">            - 初始化classloader,第二个参数为父classLoader commonLoader &#x3D; createClassLoader(&quot;common&quot;, null); catalinaLoader &#x3D; createClassLoader(&quot;server&quot;, commonLoader); sharedLoader &#x3D; createClassLoader(&quot;shared&quot;, commonLoader); 最终执行结果是,创建了commonLoader,catalinaLoader 和 sharedLoader,其中 catalinaLoader 和 sharedLoader 默认均使用 父classLoader: 即 commonLoader</span><br><span class="line">                - bootstrap.createClassLoader()</span><br><span class="line">                    - 读取配置文件中配置的仓库路径(需要加载的jar包的路径) CatalinaProperties.getProperty(name + &quot;.loader&quot;);</span><br><span class="line">                        - CatalinaProperties类中静态块中 static &#123;loadProperties();&#125; 后续从properties中取</span><br><span class="line">                            - loadProperties()方法, 读取catalina.base\\conf\\catalina.properties配置文件到prop属性中 D:\workspace-e3\.metadata\.plugins\org.eclipse.wst.server.core\tmp2\conf\catalina.properties</span><br><span class="line">                    - bootstrap.replace()将$&#123;catalina.home&#125;等替换成具体的路径</span><br><span class="line">                    - 根据逗号截取出每个资源路径</span><br><span class="line">                    - URL url &#x3D; new URL(repository); 先判断是不是网络资源,即先尝试使用URL加载,若它是网络资源则能加载成功, 否则捕获异常接着下面使用本地加载</span><br><span class="line">                    - 本地加载.根据路径结尾以*.jar,.jar或路径,创建不同类型的repository对象</span><br><span class="line">                        - RepositoryType枚举类分类</span><br><span class="line">                            - DIR,&#x2F;&#x2F; 表示整个目录下的资源,包括所有Class,Jar包以及其他类型资源</span><br><span class="line">                            - GLOB,&#x2F;&#x2F; 表示整个目录下所有的Jar包资源,仅仅是.jar后缀的资源</span><br><span class="line">                            - JAR,&#x2F;&#x2F; 表示单个Jar包资源</span><br><span class="line">                            - URL&#x2F;&#x2F; 表示从URL上获取的Jar包资源</span><br><span class="line">                    - 根据以上的repository列表创建classLoader. ClassLoaderFactory.createClassLoader(repositories, parent)</span><br><span class="line">                        - 遍历repositories,判断repositoryType.目的是将每种资源转换为new URL(),并添加到URL[]数组中 </span><br><span class="line">                        0.若是RepositoryType.URL类型的资源,直接new一个URL实例即可 </span><br><span class="line">                        1.若是DIR类型,则根据路径创建java.net.URL对象; </span><br><span class="line">                        2.若是GLOB(这里是E:\Java\apache-tomcat-7.0.82-01\lib),则遍历该目录下的jar包,创建文件,每个jar文件对应一个URL对象;</span><br><span class="line">                        - 最后根据以上所有的url,创建URLClassLoader并返回.该类构造器接收一个URL[]数组类型 return new URLClassLoader(array)</span><br><span class="line">        - Thread.currentThread().setContextClassLoader(catalinaLoader); 为当前线程设置classLoader为catalinaLoader</span><br><span class="line">        - 若启用了安全管理,则会在这里加载一些所需的包(默认不启用) SecurityClassLoad.securityClassLoad(catalinaLoader);</span><br><span class="line">        - 使用catalinaLoader加载catalina类 Class&lt;?&gt; startupClass &#x3D; catalinaLoader.loadClass(&quot;org.apache.catalina.startup.Catalina&quot;); Object startupInstance &#x3D; startupClass.newInstance();</span><br><span class="line">        - 设置catalina对象的parentClassLoader属性为sharedLoader, 由于前面sharedLoader默认使用的是父加载器commonLoader, 所以此处相当于设置为commonLoader org.apache.catalina.startup.Catalina.setParentClassLoader(sharedLoader);</span><br><span class="line">        - bootstrap对象 保存catalina的引用 catalinaDaemon &#x3D; startupInstance;</span><br><span class="line">    - 处理&quot;start&quot;命令</span><br><span class="line">        - 1.setAwait(true) 设置catalina.await&#x3D;true</span><br><span class="line">        - 2.daemon.load(args); 加载配置资源，通过反射调用catalina.load()方法 (1)创建digester实例,digester解析conf&#x2F;server.xml文件 (2)调用Server.init()级联初始化各个组件</span><br><span class="line">            - Catalina中 initDirs() 设置catalina.base和catalina.home和user.dir的property属性, 检查java.io.tmpdir属性是否存在</span><br><span class="line">            - initNaming() 设置java.naming.factory.url.pkgs和java.naming.factory.initia这两个System.setProperty</span><br><span class="line">            - 创建并执行digester,使用digester解析server.xml Digester digester &#x3D; createStartDigester(); Digester类按照预定的规则解析server.xml，将元素转化为对象， 包括构造对象，set属性到对象字段，同时维护相互关联关系</span><br><span class="line">                - new Digester() 创建digester对象</span><br><span class="line">                - digester.addObjectCreate() 1)添加对象创建规则ObjectCreateRule 2)SetPropertiesRule 3)SetNextRule 添加StandardServer等各级容器的关系和处理规则</span><br><span class="line">                - 创建Server实例,默认实现类是StandardServer, 可以通过server节点的className属性指定自己的实现,一般不需要</span><br><span class="line">                - 设置Server属性</span><br><span class="line">                - 调用setServer()将Server设置到Catalina对象中.可在本Catalina类中搜索setServer()方法</span><br><span class="line">                - 创建JNDI实例对象,GlobalNamingResources,并设置其属性.并调用standServer.setGlobalNamingResources()方法装配到server中</span><br><span class="line">                - 为Server添加生命周期监听</span><br><span class="line">                - 创建service实例,创建完成后,通过addService()添加到server中</span><br><span class="line">                - 为server添加生命周期监听器.默认未指定监听器,347行的null</span><br><span class="line">                - 为service添加Executor</span><br><span class="line">                - 为service添加Connector</span><br><span class="line">                - 设置属性时,将executor属性排除在外.因为Connector创建时,即ConnectorCreateRule类中, 会判断当前是否指定了executor属性.若是,则从Service中查找该名称的executor并设置到Connector中.</span><br><span class="line">                - 为Connector添加 生命周期监听器.默认未指定</span><br><span class="line">                - 添加子元素解析规则.这部分指定了Servlet容器相关的各级嵌套子节点的解析规则. 且每类嵌套子节点的解析封装为一个RuleSet类(跟进去看).包括GlobalNamingResources,Engine,Context,Cluster的解析</span><br><span class="line">            - 使用sax读取server.xml file &#x3D; configFile();</span><br><span class="line">            - digester.parse(inputSource); 使用digester解析读取的xml,在此过程中会初始化各个组件实例及其依赖关系. 最后会把server.xml文件中的内容解析到StandardServer中 (创建standServer对象并维护对象间关系)</span><br><span class="line">                - configure();</span><br><span class="line">                - getXMLReader().parse(input);</span><br><span class="line">                    - ......</span><br><span class="line">                        - 经过java里SAXPaser解析InputSource后,调用Digester.startElement()</span><br><span class="line">                            - 遍历rules rule.begin(namespaceURI, name, list); 分别创建StandardServer实例</span><br><span class="line">                                - new StandardServer()构造器</span><br><span class="line">                                    - new NamingResources()</span><br><span class="line">                                    - new NamingContextListener() addLifecycleListener(namingContextListener);</span><br><span class="line">                                - setPropertiesRule()</span><br><span class="line">                            - standardService.addConnector()</span><br><span class="line">                            - standardServer.addService() 向server中添加一个新的service. digester在xml解析时会注入这个关系</span><br><span class="line">                            - digester解析会做很多初始化操作,以后细化...</span><br><span class="line">                            - Connector con &#x3D; new Connector(attributes.getValue(&quot;protocol&quot;)); 创建Connector,会有多个Connector,和xml中配置的数量有关</span><br><span class="line">                                - Connector构造器</span><br><span class="line">                                    - setProtocol(protocol);</span><br><span class="line">                                        - 根据xml配置的协议类型,此处是Http11Protocol setProtocolHandlerClassName (&quot;org.apache.coyote.http11.Http11Protocol&quot;);</span><br><span class="line">                                    - 实例化Http11Protocol</span><br><span class="line">                                        - Http11Protocol构造器</span><br><span class="line">                                            - endpoint &#x3D; new JIoEndpoint();</span><br><span class="line">            - getServer().init(); 调用Server的init()方法,初始化各个组件. 它会调用各个service子容器的init()方法, 从而级联完成组件初始化 在调用init()时第3步,调用子类StandardService.initInternal(); 各个组件有个共同的父类: LifecycleBase,用于管理组件的生命周期和状态变化。 在走Server.init()前,先走父类LifecycleBase.init(),事件驱动当前组件状态的变化. 从StandardServer到StandardWrapper,都会调用initInternal(), 并伴随调用共有父类LifecycleBase.init()</span><br><span class="line">                - init()方法在父类LifecycleBase中, 调用父类LifecycleBase.init()</span><br><span class="line">                    - super.initInternal(); 即父类LifecycleBase.initInternal()</span><br><span class="line">                        - 1.先判断状态是否为LifecycleState.NEW(默认是)  </span><br><span class="line">                          2.LifecycleBase.setStateInternal(LifecycleState.INITIALIZING, null, false); 变更生命周期状态为LifecycleState.INITIALIZING 调用各个事件监听中的 初始化方法</span><br><span class="line">                        - 3.initInternal();这个方法一般被子类覆盖,执行子类自己的逻辑 此处为StandServer.initInternal()</span><br><span class="line">                            - StandServer.initInternal()中 super.initInternal(); 调用父类LifecycleMBeanBase.initInternal()</span><br><span class="line">                                - LifecycleMBeanBase.initInternal()中 将容器托管到JMX，便于运维管理</span><br><span class="line">                            - 遍历services调用service.init() services[i].init();</span><br><span class="line">                                - StandardService.init()中 init()方法在父类LifecycleBase中, 调用父类LifecycleBase.init()</span><br><span class="line">                                    - LifecycleBase.init()中 setStateInternal(LifecycleState.INITIALIZING, null, false); 变更生命周期状态为LifecycleState.INITIALIZING(通过事件变更)</span><br><span class="line">                                    - initInternal();&#x2F;&#x2F; 进入子类的initInternal()方法, 即调用StandardService.initInternal()</span><br><span class="line">                                        - StandardService.initInternal()中 container.init(); 此处container即为StandardEngine.init()  StandardEngine的子容器standardContext及其子容器没有init初始化逻辑</span><br><span class="line">                                            - StandardEngine.init()中,略去LifecycleBase中生命周期变更的重复逻辑 StandardEngine.initInternal()中 getRealm(); 创建realm</span><br><span class="line">                                            - super.initInternal(); 即为ContainerBase.initInternal() Engine,Host,Context,Wrapper容器都拥有共同父类ContainerBase</span><br><span class="line">                                                - ContainerBase.initInternal()中 startStopExecutor &#x3D; new ThreadPoolExecutor() 初始化startStopExecutor,用于管理启动和关闭的线程</span><br><span class="line">                                                - super.init()即LifecycleMBeanBase.initInternal()</span><br><span class="line">                                                    - ......略去各个StandardHost.init()</span><br><span class="line">                                                        - ...</span><br><span class="line">                                                            - lifecycleBase.init()</span><br><span class="line">                                                                - LifecycleBase.setStateInternal(LifecycleState.INITIALIZED, null, false);初始化完成 StandardContext父类LifecycleBase变更生命周期状态,调用各个事件监听中的 initializing</span><br><span class="line">                                                                - initInternal();&#x2F;&#x2F; 进入子类StandardContext.initInternal()方法</span><br><span class="line">                                                                    - super.initInternal(); StandardContext.initInternal()调用父类ContainerBase.initInternal() 它会创建startStopExecutor 并调用父类LifecycleMBeanBase.initInternal(); 这里会将容器托管到JMX</span><br><span class="line">                                                                    - this.addLifecycleListener(new TldConfig()); 添加TldConfig监听</span><br><span class="line">                                                                - setStateInternal(LifecycleState.INITIALIZED, null, false); &#x2F;&#x2F; 更新组件生命周期状态为LifecycleState.INITIALIZED</span><br><span class="line">                                                                    - ...</span><br><span class="line">                                                                        - contextConfig.lifecycleEvent() contextConfig AFTER_INIT_EVENT生命周期事件处理</span><br><span class="line">                                                                            - contextConfig.init(); context初始化阶段,context属性配置 tomcat提供的默认配置添加到context实例 完成对应的 每个web应用项目的配置解析(web.xml)</span><br><span class="line">                                                                                - createContextDigester()</span><br><span class="line">                                                                                - contextDigester.getParser();</span><br><span class="line">                                                                                - contextConfig(contextDigester);  解析config.xml配置 E:\Java\apache-tomcat-7.0.82-01\conf\context.xml</span><br><span class="line">                                                                                - createWebXmlDigester()</span><br><span class="line">                                                                            - beforeStart() Lifecycle.BEFORE_START_EVENT状态</span><br><span class="line">                                        - executor.init(); 初始化executors,即tomcat间可共享的线程池</span><br><span class="line">                                        - connector初始化</span><br><span class="line">                                            - connector.initInternal();</span><br><span class="line">                                                - adapter &#x3D; new CoyoteAdapter(this); 构建与指定连接器关联的新CoyoteAdapter</span><br><span class="line">                                                - protocolHandler.setAdapter(adapter); 给 协议处理器 添加 adapter</span><br><span class="line">                                                - protocolHandler.init(); 初始化具体协议类型，如Http11Protocol协议</span><br><span class="line">                                                    - AbstractHttp11JsseProtocol.init()</span><br><span class="line">                                                        - endpoint初始化之前,需要初始化ssl实现类 sslImplementation &#x3D; SSLImplementation.getInstance(sslImplementationName); return new org.apache.tomcat.util.net.jsse.JSSEImplementation();</span><br><span class="line">                                                        - super.init(),即AbstractProtocol.init() 1.注册组件JIoEndPoint;  2.endpoint.init() 设置work threads的数量，默认为200，并创建serverSocket对象</span><br><span class="line">                                                            - abstractProtocol.bind() 设置线程数,网络连接数</span><br><span class="line">                                                                - 初始化acceptor线程数量,默认1个; 初始化最大连接数,此值为server.xml的connector元素的属性MaxThreads值，(若不设置则)默认200</span><br><span class="line">                                                                - abstractEndpoint.getMaxThreadsWithExecutor() 返回成员变量maxThreads&#x3D;200</span><br><span class="line">                                                                - abstractEndpoint.setMaxConnections(getMaxThreadsWithExecutor()); 设置最大连接数</span><br><span class="line">                                                                    - initializeConnectionLatch(); 创建LimitLatch对象并初始化连接数 即 connectionLimitLatch &#x3D; new LimitLatch(getMaxConnections());</span><br><span class="line">                                                                - serverSocketFactory &#x3D; new DefaultServerSocketFactory(this); 创建ServerSocketFactory</span><br><span class="line">                                                                - serverSocket &#x3D; serverSocketFactory.createSocket(getPort(),getBacklog()); 创建serverSocket</span><br><span class="line">                                                - 初始化mapper listener mapperListener.init();</span><br><span class="line">                        - 容器初始化完毕，LifecycleBase会将容器的状态更改为初始化完毕 setStateInternal(LifecycleState.INITIALIZED, null, false);</span><br><span class="line">        - 3.daemon.start().即catalina.start() 运行各个组件,容器开始启动.</span><br><span class="line">            - getServer().start() 启动Server 即standardServer.start(),由于未重写该方法. 所以会先调用父类LifecycleBase.start()</span><br><span class="line">                - LifecycleBase.start()中 setStateInternal(LifecycleState.STARTING_PREP, null, false); &#x2F;&#x2F; 启动前将状态设置为LifecycleState.STARTING_PREP</span><br><span class="line">                - startInternal(); &#x2F;&#x2F; 模板方法调用子类逻辑</span><br><span class="line">                    - StandardServer.startInternal();中 1.发布configure_start事件 fireLifecycleEvent(CONFIGURE_START_EVENT, null);</span><br><span class="line">                    - 2.设置状态为starting setState(LifecycleState.STARTING);  3.globalNamingResources.start(); globalNamingResources.start();</span><br><span class="line">                    - 4.services[i].start(); 启动多个Service子容器. 略去LifecycleBase.start()的重复逻辑, 调用standardService.startInternal()</span><br><span class="line">                        - standardService.startInternal()中 container.start(): 启动container,此时container为StandardEngine</span><br><span class="line">                            - StandardEngine.startInternal()中 调用super.startInternal(), 即ContainerBase.startInternal()</span><br><span class="line">                                - ContainerBase.startInternal()中 若配置了loader,manager,cluster,realm等,则会启动这些下属组件.  在engine,host,context等容器的启动逻辑都会调用该父类(ContainerBase)的此方法用于加载启动子容器. containerBase.startInternal()会向线程池 提交启动子容器的任务,并阻塞等待子容器启动的返回结果判定是否启动成功</span><br><span class="line">                                    - ContainerBase.startInternal()中 getLoaderInternal()</span><br><span class="line">                                        - Lock readLock &#x3D; loaderLock.readLock(); readLock.lock(); try &#123;     return loader; &#125; finally &#123;     readLock.unlock(); &#125;</span><br><span class="line">                                    - 若配置了realm组件,则启动 Realm realm &#x3D; getRealmInternal();  if ((realm !&#x3D; null) &amp;&amp; (realm instanceof Lifecycle))      ((Lifecycle) realm).start();</span><br><span class="line">                                    - 若有子容器,则启动 Container children[] &#x3D; findChildren();</span><br><span class="line">                                    - results.add(startStopExecutor.submit(new StartChild(children[i]))); 提交启动子容器的任务,后续StandHost的操作会在新线程中完成</span><br><span class="line">                                        - StartChild.call() class StartChild implements Callable&lt;Void&gt; StartChild类实现Callable,会执行覆写的call()方法</span><br><span class="line">                                            - child.start(); 启动子容器,比如此处Engine的子容器就是Host 即调用standHost.start()</span><br><span class="line">                                                - StandardHost.start() 使用父类LifecycleBase中的start()方法</span><br><span class="line">                                                    - LifecycleBase.start()中</span><br><span class="line">                                                        - LifecycleBase.start()中 setStateInternal(LifecycleState.STARTING_PREP, null, false); 触发before_start事件,即Host容器发布before_start事件, 相关监听器会接收到通知,执行相应逻辑,如HostConfig监听器</span><br><span class="line">                                                            - HostConfig.lifecycleEvent() HostConfig实现LifecycleListener接口,在StandardHost启动时生命周期发生变化时, 会调用HostConfig的lifecycleEvent()对特定事件进行逻辑处理</span><br><span class="line">                                                                - 调用HostConfig.beforeStart() BEFORE_START_EVENT</span><br><span class="line">                                                                    - beforeStart() 会创建appBase和configBase路径所需的目录</span><br><span class="line">                                                                        - 判断host.getCreateDirs(),对appBase和configBase进行mkdirs()</span><br><span class="line">                                                        - lifecycleBase.startInternal(); 会调用子类StandardHost.startInternal()</span><br><span class="line">                                                            - StandardHost.startInternal()中 Valve[] valves &#x3D; getPipeline().getValves();</span><br><span class="line">                                                                - 获取错误阀的阀名,即org.apache.catalina.valves.ErrorReportValve getErrorReportValveClass()</span><br><span class="line">                                                                - 若有错误阀名,尝试遍历所有阀找出这个class类 StandardPipline.getValues() 通过value.getNext()循环遍历将所有Value成数组返回</span><br><span class="line">                                                                - 若没有找到,则反射创建实例,并添加到pipeline中</span><br><span class="line">                                                            - super.startInternal(); 调用ContainerBase.startInternal()新起线程启动子容器(即Host的Context子容器)</span><br><span class="line">                                                                - ContainerBase.startInternal()中 results.add(startStopExecutor.submit(new StartChild(children[i]))); 启动StandardContext!!!!!!后续子节点都是Context容器的操作</span><br><span class="line">                                                                    - 调用StandardContext.start(), 由于该类未重写start(), 所以实际上调用父类lifecycleBase.start()</span><br><span class="line">                                                                        - lifecycleBase.start()中 若是LifecycleState.NEW状态</span><br><span class="line">                                                                        - LifecycleBase.setStateInternal(LifecycleState.STARTING_PREP, null, false); 设置LifecycleState.STARTING_PREP状态,即before_start</span><br><span class="line">                                                                            - 调用ContextConfig.beforeStart(); &#x2F;&#x2F; 在context启动前触发,用于更新Context的docBase属性 和 解决web目录锁的问题</span><br><span class="line">                                                                        - LifecycleBase.startInternal();</span><br><span class="line">                                                                            - 调用子类StandardContext.startInternal() 完成对web应用的初始化工作</span><br><span class="line">                                                                                - StandardContext.startInternal()里经过一系列操作,将状态变更为CONFIGURE_START_EVENT standardContext.fireLifecycleEvent(Lifecycle.CONFIGURE_START_EVENT, null); 发布CONFIGURE_START_EVENT事件,contextConfig监听以完成servlet创建</span><br><span class="line">                                                                                    - contextConfig.configureStart(); web应用初始化.解析web.xml文件, 创建wrapper,Filter,ServletContextListener等.</span><br><span class="line">                                                                                        - contextConfig.webConfig()</span><br><span class="line">                                                                                            - webXml.configureContext(context); 解析web.xml,将webXml对象设置给context</span><br><span class="line">                                                                                                - Lin1388 webXml.configureContext(context); 解析servlet,将Servlet包装成Wrapper</span><br><span class="line">                                                                                                    - context.createWrapper()</span><br><span class="line">                                                                                                    - wrapper.setServletClass(servlet.getServletClass()); 将wrapper与servlet绑定</span><br><span class="line">                                                                                                    - context.addChild(wrapper); 将wrapper添加到context中</span><br><span class="line">                                                                                                        - containerBase.addChildInternal(child);</span><br><span class="line">                                                                                                            - child.start(); 即standardWraper.start()</span><br><span class="line">                                                                                                                - Wrapper容器 StandardWrapper.start()</span><br><span class="line">                                                                        - LifecyclesetStateInternal(LifecycleState.STARTED, null, false); 设置LifecycleState.STARTED状态,即after_start</span><br><span class="line">                                                                            - 调用context.setDocBase(originalDocBase);</span><br><span class="line">                                                                        - containerBase.threadStart(); 启动Context层级的后台任务进程.Cluster后台任务(包括部署变更检测,心跳).Pipeline中Value的后台任务处理(如果有定时处理任务)</span><br><span class="line">                                                                - ContainerBase.startInternal()中 setState(LifecycleState.STARTING); 设置容器状态为STARTING,此时会触发START_EVENT生命周期事件.即start事件</span><br><span class="line">                                                                    - 调用HostConfig.start(); Host启动时触发,完成服务器启动过程中的 Web应用部署. 需要 Host的deployOnstartup&#x3D;&quot;true&quot;才会在服务器启动时部署web应用. </span><br><span class="line">                                    - 若有管道,则启动 if (pipeline instanceof Lifecycle)     ((Lifecycle) pipeline).start();</span><br><span class="line">                        - executor.start(); 启动service容器的多个线程池executors</span><br><span class="line">                        - connector.start(); 启动service组件的多个connector</span><br><span class="line">                            - connector.startInternal()</span><br><span class="line">                                - protocolHandler.start(); 启动 协议处理器</span><br><span class="line">                                    - endpoint.start();</span><br><span class="line">                                        - createExecutor(); 创建endpoint私有的线程池,即ThreadPoolExecutor线程池</span><br><span class="line">                                            - abstractEndpoint.createExecutor()</span><br><span class="line">                                                - new TaskQueue(); 用来运行线程池执行器的任务队列,该类extends LinkedBlockingQueue&lt;Runnable&gt;  new TaskThreadFactory()  implements ThreadFactory 线程工厂,用于创建并返回线程  executor &#x3D; new ThreadPoolExecutor() 根据前两者 创建线程池</span><br><span class="line">                                        - initializeConnectionLatch(); 创建LimitLatch对象,之前init时已经创建.此处直接返回</span><br><span class="line">                                        - startAcceptorThreads(); 创建多个Acceptors</span><br><span class="line">                                            - getAcceptorThreadCount(); 获取acceptor线程数量,默认1</span><br><span class="line">                                            - return new JIoEndpoint.Acceptor() implements Runnable; 创建JIoEndpoint</span><br><span class="line">                                            - Thread t &#x3D; new Thread(acceptors[i], threadName); 根据JIoEndpoint创建线程,且是守护线程</span><br><span class="line">                                - mapperListener.start(); 启动 mapperListener</span><br><span class="line">                                    - findDefaultHost(); 从engine中获取defaultHost并设置给mapper</span><br><span class="line">                                        - 从engine中获取defaultHost并设置给mapper mapper.setDefaultHostName(defaultHost);</span><br><span class="line">                                    - addListeners(engine);</span><br><span class="line">                                        - container.addContainerListener(this); container.addLifecycleListener(this); addListeners(child); 其中this为engine,child为host.即给engine注册监听</span><br><span class="line">                                    - registHost() 向mapper注册host及其下的context,wrapper</span><br><span class="line">                                        - mapper.addHost(host.getName(), aliases, host);</span><br><span class="line">                                        - registerContext((Context) container); 向mapper注册context</span><br><span class="line">                                            - prepareWrapperMappingInfo(context, (Wrapper) container, wrappers);</span><br></pre></td></tr></table></figure>
+<h2 id="bootstrap-init"><a href="#bootstrap-init" class="headerlink" title="bootstrap.init()"></a>bootstrap.init()</h2><p>创建 commonClassLoader,和 两个子 类加载器 catalinaLoader 和 sharedLoader,当然都是 URLClassLoader 实例,加载 一些 Jar.</p>
+<p>设置当前线程的上下文类加载器为 catalinaLoader</p>
+<p>设置 Catalina 的 父类加载器为 sharedLoader</p>
+<h2 id="处理-start-命令"><a href="#处理-start-命令" class="headerlink" title="处理 start 命令"></a>处理 start 命令</h2><p>分为 load 和 start 两步</p>
+<h3 id="load"><a href="#load" class="headerlink" title="load"></a>load</h3><p>读取 conf/server.xml 配置,使用 digester 解析,组装对象.</p>
+<p>server.init() 主要遍历 services,调用其 init() 方法<br>状态变更: LifecycleState.NEW -&gt; LifecycleState.INITIALIZING -&gt; initInternal() -&gt; LifecycleState.INITIALIZED</p>
+<p>service.init()<br>调用 engine.init(),初始化executor,遍历初始化 connectors</p>
+<p>Connector.init()<br>创建 CoyoteAdapter<br>protocolHandler 关联 adapter<br>protocolHandler.init(),这里面会初始化 endpoint<br>mapperListener.init()</p>
+<p>StandEngine.init()<br>engine,host,context,wrapper 都继承自 ContainerBase,ContainerBase里会起 startStopExecutor 线程池,这个线程池用于子容器启动,父容器会等待子容器启动完成.</p>
+<h3 id="start"><a href="#start" class="headerlink" title="start"></a>start</h3><p>Catalina.start()<br>调用 server.start()</p>
+<p>StandardServer.start()<br>触发 CONFIGURE_START_EVENT 事件,设置自身的状态为 STARTING,遍历调用 services.start()</p>
+<p>StandService.start()<br>设置状态为 STARTING,调用 engine.start(),excutors.start(),connector.start()</p>
+<p>StandEngine.start()<br>会走父类 ContainerBase.startInternal(),在 ContainerBase 中,若配了 loader,manager, cluster, realm 则 启动.<br>然后就查找所有子容器,每个子容器都交由 startStopExecutor 线程池 执行 StartChild 的逻辑,调用 child.start().并通过 future.get() 阻塞等待所有子容器启动成功.<br>pipeline.start()<br>设置线程状态为 STARTING,触发 START_EVENT 生命周期事件.<br>启动一个 ContainerBackgroundProcessor 后台线程.</p>
+<p>ContainerBase.startInternal()代码<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">startInternal</span><span class="params">()</span> <span class="keyword">throws</span> LifecycleException </span>&#123;</span><br><span class="line">    <span class="comment">// Start our subordinate components, if any.启动下属组件</span></span><br><span class="line">    Loader loader = getLoaderInternal();</span><br><span class="line">    <span class="keyword">if</span> ((loader != <span class="keyword">null</span>) &amp;&amp; (loader <span class="keyword">instanceof</span> Lifecycle))<span class="comment">// 若配置了loader则启动</span></span><br><span class="line">        ((Lifecycle) loader).start();</span><br><span class="line">    logger = <span class="keyword">null</span>;</span><br><span class="line">    getLogger();</span><br><span class="line">    Manager manager = getManagerInternal();</span><br><span class="line">    <span class="keyword">if</span> ((manager != <span class="keyword">null</span>) &amp;&amp; (manager <span class="keyword">instanceof</span> Lifecycle))</span><br><span class="line">        ((Lifecycle) manager).start();</span><br><span class="line">    Cluster cluster = getClusterInternal();</span><br><span class="line">    <span class="keyword">if</span> ((cluster != <span class="keyword">null</span>) &amp;&amp; (cluster <span class="keyword">instanceof</span> Lifecycle))<span class="comment">// 若配置了集群,则启动</span></span><br><span class="line">        ((Lifecycle) cluster).start();</span><br><span class="line">    Realm realm = getRealmInternal();</span><br><span class="line">    <span class="keyword">if</span> ((realm != <span class="keyword">null</span>) &amp;&amp; (realm <span class="keyword">instanceof</span> Lifecycle))<span class="comment">// 若配置了安全组件Realm,则启动</span></span><br><span class="line">        ((Lifecycle) realm).start();</span><br><span class="line">    DirContext resources = getResourcesInternal();</span><br><span class="line">    <span class="keyword">if</span> ((resources != <span class="keyword">null</span>) &amp;&amp; (resources <span class="keyword">instanceof</span> Lifecycle))</span><br><span class="line">        ((Lifecycle) resources).start();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Start our child containers, if any.启动子容器,如果有的话.</span></span><br><span class="line">    Container children[] = findChildren();</span><br><span class="line">    List&lt;Future&lt;Void&gt;&gt; results = <span class="keyword">new</span> ArrayList&lt;Future&lt;Void&gt;&gt;();</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; children.length; i++) &#123; <span class="comment">// 提交 启动子容器的任务.并阻塞当前线程等待执行结果</span></span><br><span class="line">        results.add(startStopExecutor.submit(<span class="keyword">new</span> StartChild(children[i]))); <span class="comment">// 子容器使用 startStopExecutor 调用新线程来启动</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">boolean</span> fail = <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">for</span> (Future&lt;Void&gt; result : results) &#123; <span class="comment">// 启动 多个子容器的执行结果</span></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            result.get(); <span class="comment">// 阻塞直到所有子容器启动完毕</span></span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            log.error(sm.getString(<span class="string">"containerBase.threadedStartFailed"</span>), e);</span><br><span class="line">            fail = <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (fail) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> LifecycleException(</span><br><span class="line">                sm.getString(<span class="string">"containerBase.threadedStartFailed"</span>));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Start the Valves in our pipeline (including the basic), if any.启动容器持有的Pipeline组件的Value.若有管道,则启动</span></span><br><span class="line">    <span class="keyword">if</span> (pipeline <span class="keyword">instanceof</span> Lifecycle)</span><br><span class="line">        ((Lifecycle) pipeline).start();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 设置容器状态为STARTING,此时会触发START_EVENT生命周期事件.</span></span><br><span class="line">    setState(LifecycleState.STARTING);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Start our thread. 启动该层级的后台定时任务进程(不同容器调用,则启动不同容器的后台线程).用于处理如 Cluster 后台任务(包括部署变更检测,心跳).Realm 后台任务处理.Pipeline 中 Value 的后台任务处理(如果有定时处理任务)</span></span><br><span class="line">    threadStart();</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>StandardHost.startInternal()<br>不存在errorValve则创建,调用 ContainerBase.startInternal() 启动子容器.子容器是在 HostConfig.deployXxx里通过<code>host.addChild(context)</code>添加进来的.</p>
+<p>StandContext.startInternal()<br>创建 WebappLoader 并启动<br>触发 CONFIGURE_START_EVENT 事件,contextConfig 监听以完成 servlet 创建<br>遍历启动子容器<br>启动pipline<br>触发listener的各种事件<br>初始化filter<br>初始化servlets,调用 load-on-startup 的 servlet 的 init() 方法<br>遍历 wraper,调用 wrapper.load() 加载 wrapper</p>
+<p>StandWrapper.startInternal()<br>没什么重要逻辑</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Tomcat/" rel="tag"># Tomcat</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/12/18/01no/struct/BloomFilter/" rel="next" title="布隆过滤器">
+                <i class="fa fa-chevron-left"></i> 布隆过滤器
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/12/19/01no/tomcat/tomcat01-lifecycle/" rel="prev" title="Tomcat Lifecycle">
+                Tomcat Lifecycle <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/zc-icon.jpeg"
+                alt="flyingzc" />
+            
+              <p class="site-author-name" itemprop="name">flyingzc</p>
+              <p class="site-description motion-element" itemprop="description">hello world</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">27</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#tomcat-启动"><span class="nav-number">1.</span> <span class="nav-text">tomcat 启动</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#启动流程"><span class="nav-number">1.1.</span> <span class="nav-text">启动流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#bootstrap-init"><span class="nav-number">1.2.</span> <span class="nav-text">bootstrap.init()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#处理-start-命令"><span class="nav-number">1.3.</span> <span class="nav-text">处理 start 命令</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#load"><span class="nav-number">1.3.1.</span> <span class="nav-text">load</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#start"><span class="nav-number">1.3.2.</span> <span class="nav-text">start</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">flyingzc</span>
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+<!--网站运行时间-->
+<span id="sitetime"></span>
+<script language=javascript>
+  function siteTime() {
+    window.setTimeout("siteTime()", 1000);
+    var seconds = 1000;
+    var minutes = seconds * 60;
+    var hours = minutes * 60;
+    var days = hours * 24;
+    var years = days * 365;
+    var today = new Date();
+    var todayYear = today.getFullYear();
+    var todayMonth = today.getMonth()+1;
+    var todayDate = today.getDate();
+    var todayHour = today.getHours();
+    var todayMinute = today.getMinutes();
+    var todaySecond = today.getSeconds();
+    /* Date.UTC() -- 返回date对象距世界标准时间(UTC)1970年1月1日午夜之间的毫秒数(时间戳)
+    year - 作为date对象的年份，为4位年份值
+    month - 0-11之间的整数，做为date对象的月份
+    day - 1-31之间的整数，做为date对象的天数
+    hours - 0(午夜24点)-23之间的整数，做为date对象的小时数
+    minutes - 0-59之间的整数，做为date对象的分钟数
+    seconds - 0-59之间的整数，做为date对象的秒数
+    microseconds - 0-999之间的整数，做为date对象的毫秒数 */
+    var t1 = Date.UTC(2020,03,14,00,00,00); // 这里调整博客建站时间，时间：2019-05-14 00:00:00
+    var t2 = Date.UTC(todayYear,todayMonth,todayDate,todayHour,todayMinute,todaySecond);
+    var diff = t2-t1;
+    var diffYears = Math.floor(diff/years);
+    var diffDays = Math.floor((diff/days)-diffYears*365);
+    var diffHours = Math.floor((diff-(diffYears*365+diffDays)*days)/hours);
+    var diffMinutes = Math.floor((diff-(diffYears*365+diffDays)*days-diffHours*hours)/minutes);
+    var diffSeconds = Math.floor((diff-(diffYears*365+diffDays)*days-diffHours*hours-diffMinutes*minutes)/seconds);
+    document.getElementById("sitetime").innerHTML=" 已运行 "+/*diffYears+" 年 "+*/diffDays+" 天 "+diffHours+" 小时 "+diffMinutes+" 分钟 "+diffSeconds+" 秒";
+  }
+  siteTime();
+</script>
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/click-love.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'KJfwqYdjPEntCa9nSuFk59FG-gzGzoHsz',
+        appKey: 'R65YXNgdIqdaW4pYtQaTcVnG',
+        placeholder: 'ヾﾉ≧∀≦)',
+        avatar:'/images/zc-icon.jpeg',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("KJfwqYdjPEntCa9nSuFk59FG-gzGzoHsz", "R65YXNgdIqdaW4pYtQaTcVnG");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"log":false,"pluginJsPath":"lib/","pluginModelPath":"assets/","pluginRootPath":"live2dw/","tagMode":false});</script></body>
+</html>
