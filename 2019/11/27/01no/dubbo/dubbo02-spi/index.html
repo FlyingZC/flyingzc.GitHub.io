@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Dubbo," />
+
+
+
+
+  
+
+
+  <link rel="alternate" href="/atom.xml" title="flyingzc's blog" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="SPI机制SPI 作用SPI 全称为 Service Provider Interface,是一种服务发现机制. SPI 的本质是将接口实现类的全限定名配置在文件中,并由服务加载器读取配置文件,加载实现类. 这样可以在运行时,动态为接口替换实现类.正因此特性,我们可以很容易的通过 SPI 机制为我们的程序提供拓展功能. Dubbo里面有很多个组件,每个组件在框架中都是以接口的形式抽象出来.具体的实">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Dubbo SPI 机制">
+<meta property="og:url" content="http://yoursite.com/2019/11/27/01no/dubbo/dubbo02-spi/index.html">
+<meta property="og:site_name" content="flyingzc&#39;s blog">
+<meta property="og:description" content="SPI机制SPI 作用SPI 全称为 Service Provider Interface,是一种服务发现机制. SPI 的本质是将接口实现类的全限定名配置在文件中,并由服务加载器读取配置文件,加载实现类. 这样可以在运行时,动态为接口替换实现类.正因此特性,我们可以很容易的通过 SPI 机制为我们的程序提供拓展功能. Dubbo里面有很多个组件,每个组件在框架中都是以接口的形式抽象出来.具体的实">
+<meta property="og:image" content="https://gitee.com/flyingzc/MyImg/raw/master/img/dubbo/2019-11-28-11-03-56.png">
+<meta property="article:published_time" content="2019-11-26T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-05-24T14:08:14.566Z">
+<meta property="article:author" content="flyingzc">
+<meta property="article:tag" content="Dubbo">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gitee.com/flyingzc/MyImg/raw/master/img/dubbo/2019-11-28-11-03-56.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/11/27/01no/dubbo/dubbo02-spi/"/>
+
+
+
+
+
+  <title>Dubbo SPI 机制 | flyingzc's blog</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <a href="https://github.com/FlyingZC" target="_blank" rel="noopener" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">flyingzc's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/27/01no/dubbo/dubbo02-spi/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="flyingzc">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/zc-icon.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="flyingzc's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Dubbo SPI 机制</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-11-27T00:00:00+08:00">
+                2019-11-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Dubbo/" itemprop="url" rel="index">
+                    <span itemprop="name">Dubbo</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/11/27/01no/dubbo/dubbo02-spi/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2019/11/27/01no/dubbo/dubbo02-spi/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2019/11/27/01no/dubbo/dubbo02-spi/" class="leancloud_visitors" data-flag-title="Dubbo SPI 机制">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="SPI机制"><a href="#SPI机制" class="headerlink" title="SPI机制"></a>SPI机制</h1><h2 id="SPI-作用"><a href="#SPI-作用" class="headerlink" title="SPI 作用"></a>SPI 作用</h2><p>SPI 全称为 Service Provider Interface,是一种服务发现机制.</p>
+<p>SPI 的本质是将接口实现类的全限定名配置在文件中,并由服务加载器读取配置文件,加载实现类.</p>
+<p>这样可以在运行时,动态为接口替换实现类.正因此特性,我们可以很容易的通过 SPI 机制为我们的程序提供拓展功能.</p>
+<p>Dubbo里面有很多个组件,每个组件在框架中都是以接口的形式抽象出来.具体的实现又分很多种,在程序执行时根据用户的配置来按需取接口的实现类.</p>
+<h2 id="Dubbo-实现的-SPI-与-JDK-自带的-SPI-的区别"><a href="#Dubbo-实现的-SPI-与-JDK-自带的-SPI-的区别" class="headerlink" title="Dubbo 实现的 SPI 与 JDK 自带的 SPI 的区别"></a>Dubbo 实现的 SPI 与 JDK 自带的 SPI 的区别</h2><p>摘自官网</p>
+<ul>
+<li><p>JDK 标准的 SPI 会一次性实例化扩展点所有实现,如果有扩展实现初始化很耗时,但如果没用上也加载,会很浪费资源.</p>
+</li>
+<li><p>如果扩展点加载失败,连扩展点的名称都拿不到了.<br>比如: JDK 标准的 ScriptEngine,通过 getName() 获取脚本类型的名称,但如果 RubyScriptEngine 因为所依赖的 jruby.jar 不存在,导致 RubyScriptEngine 类加载失败,这个失败原因被吃掉了,和 ruby 对应不起来,当用户执行 ruby 脚本时,会报不支持 ruby,而不是真正失败的原因.</p>
+</li>
+<li><p>增加了对扩展点 IoC 和 AOP 的支持,一个扩展点可以直接 setter 注入其它扩展点.</p>
+</li>
+<li><p>JDK 的 SPI 要用 for 循环,然后 if 判断才能获取到指定的 SPI 对象,Dubbo 用指定的 key 就可以获取.</p>
+</li>
+<li><p>JDK 的 SPI 不支持默认值,Dubbo 增加了默认值的设计.</p>
+</li>
+</ul>
+<h2 id="SPI-配置和使用"><a href="#SPI-配置和使用" class="headerlink" title="SPI 配置和使用"></a>SPI 配置和使用</h2><p>只有在接口打了 @SPI 注解的接口类才会去查找扩展点实现.</p>
+<p>会依次从这几个文件中读取扩展点<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">META-INF&#x2F;Dubbo&#x2F;internal&#x2F;   &#x2F;&#x2F; Dubbo内部实现的各种扩展都放在了这个目录了</span><br><span class="line">META-INF&#x2F;Dubbo&#x2F;</span><br><span class="line">META-INF&#x2F;services&#x2F;</span><br></pre></td></tr></table></figure></p>
+<p>比如</p>
+<ol>
+<li><p>Protocol 接口,接口上打了 @SPI 注解,默认拓展点名字为 Dubbo</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@SPI</span>(<span class="string">"Dubbo"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Protocol</span></span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查找 Dubbo-rpc-default 模块下 META-INF/Dubbo/internal/com.alibaba.Dubbo.rpc.Protocol 中的配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Dubbo&#x3D;com.alibaba.Dubbo.rpc.protocol.Dubbo.DubboProtocol</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>会用 ExtensionLoader 类加载实现<br>Dubbo=com.alibaba.Dubbo.rpc.protocol.Dubbo.DubboProtocol</p>
+</li>
+<li><p>获取拓展类对象的代码示例</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 通过 ExtensionLoader.getExtensionLoader() 方法获取一个 ExtensionLoader 实例</span></span><br><span class="line">ExtensionLoader&lt;Protocol&gt; extensionLoader = ExtensionLoader.getExtensionLoader(Protocol<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 然后再通过 ExtensionLoader.getExtension() 方法获取拓展类对象</span></span><br><span class="line">Protocol dubboProtocol = extensionLoader.getExtension(<span class="string">"Dubbo"</span>);</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h2 id="Dubbo-拓展点加载机制相关注解和组件"><a href="#Dubbo-拓展点加载机制相关注解和组件" class="headerlink" title="Dubbo 拓展点加载机制相关注解和组件"></a>Dubbo 拓展点加载机制相关注解和组件</h2><p>@SPI</p>
+<p>@Adaptive</p>
+<p>@Activate</p>
+<h3 id="SPI-注解"><a href="#SPI-注解" class="headerlink" title="@SPI 注解"></a>@SPI 注解</h3><p>@SPI注解作用于扩展点的接口上,<code>表明该接口是一个扩展点</code>.可以被 Dubbo 的 ExtentionLoader 加载,如果没有此 ExtensionLoader 调用会异常.</p>
+<h3 id="Adaptive-注解"><a href="#Adaptive-注解" class="headerlink" title="@Adaptive 注解"></a>@Adaptive 注解</h3><ol>
+<li><p>在类上加 @Adaptive 注解的类,会创建对应类型的 Adaptive 类 缓存起来.代码里搜了一下,有 AdaptiveExtensionFactory, AdaptiveCompiler 这两个类上打了 @Adaptive 注解.</p>
+</li>
+<li><p>在方法上加 @Adaptive 注解,会先动态生成适配类的 Java 代码(可以打断点在 ExtensionLoader.createAdaptiveExtensionClassCode() 中看到生成的类),再默认用 Javassist 生成动态编译的 Adaptive 字节码.</p>
+</li>
+</ol>
+<p>ExtensionLoader.loadFile() 时: 会判断类名是否含有 @Adaptive 注解.若有,则将此类作为适配类 缓存起来. (如果一个接口的所有实现类都没有类上打上这个注解的情况,则会用 Javassist 生成一个 Adaptive 类)</p>
+<h3 id="Activate-注解"><a href="#Activate-注解" class="headerlink" title="@Activate 注解"></a>@Activate 注解</h3><p>可以被框架中自动激活加载扩展,这个注解用于配置扩展被自动激活的加载条件.</p>
+<p>用户通过 group 和 value 配置激活条件.被 @Activate 注解的扩展点在满足某种条件时会被激活,它一般用来配合 filter,声明他们的使用场景.</p>
+<h3 id="Wrapper"><a href="#Wrapper" class="headerlink" title="Wrapper"></a>Wrapper</h3><p>Wrapper 类同样实现了扩展点接口,但是 Wrapper 不是扩展点的真正实现.它的用途主要是用于从 ExtensionLoader 返回扩展点时,包装在真正的扩展点实现外层.即从 ExtensionLoader 中返回的实际上是 Wrapper 类的实例,Wrapper 持有了实际的扩展点实现类.</p>
+<p>扩展点的 Wrapper 类可以有多个,也可以根据需要新增.</p>
+<p>通过 Wrapper 类可以把所有扩展点公共逻辑移至 Wrapper 中.新加的 Wrapper 在所有的扩展点上添加了逻辑,有些类似 AOP,即 Wrapper 代理了扩展点.</p>
+<h3 id="ExtensionLoader"><a href="#ExtensionLoader" class="headerlink" title="ExtensionLoader"></a>ExtensionLoader</h3><p>ExtensionLoader 是扩展点载入器,用于载入 Dubbo 中的各种可配置组件,比如: 动态代理方式(ProxyFactory),负载均衡策略(LoadBalance),RCP协议(Protocol),拦截器(Filter),容器类型(Container),集群方式(Cluster)和注册中心类型(RegistryFactory)等.</p>
+<h1 id="获取-ExtensionLoader-流程"><a href="#获取-ExtensionLoader-流程" class="headerlink" title="获取 ExtensionLoader 流程"></a>获取 ExtensionLoader 流程</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">- ExtensionLoader&lt;Protocol&gt; loader &#x3D; ExtensionLoader.getExtensionLoader(Protocol.class)</span><br><span class="line">    根据拓展点的接口,获得拓展加载器.如根据Protocol接口获取它对应的ExtensionLoader</span><br><span class="line">    - ExtensionLoader.getExtensionLoader(Class&lt;T&gt; type)中</span><br><span class="line">    - 1.type必须是接口</span><br><span class="line">    - 2.type上包含@SPI注解</span><br><span class="line">    - 3.根据type尝试从EXTENSION_LOADERS缓存中获取ExtensionLoader</span><br><span class="line">    - 4.在3中获取不到,则new ExtensionLoader&lt;T&gt;(type)创建并缓存起来</span><br><span class="line">        - ExtensionLoader(Class&lt;?&gt; type)构造器中,若传入的type不是ExtensionFactory类型,则会获取ExtensionFactory的adaptiveExtension赋值到当前ExtensionLoader对象的objectFactory属性中,这个objectFactory类似于IoC容器,用于向拓展对象注入依赖的属性.</span><br><span class="line">            - &#x2F;&#x2F; 参见objectFactory创建的逻辑</span><br><span class="line">    - 5.返回ExtensionLoader</span><br></pre></td></tr></table></figure>
+<h1 id="获取-AdaptiveExtension-流程"><a href="#获取-AdaptiveExtension-流程" class="headerlink" title="获取 AdaptiveExtension 流程"></a>获取 AdaptiveExtension 流程</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">- Protocol adaptiveExtension &#x3D; loader.getAdaptiveExtension()</span><br><span class="line">    注解在接口的方法上,SPI机制可以根据接口动态地生成自适应类 xxx$Adaptive,并实例化这个类并返回</span><br><span class="line">    - ExtensionLoader.getAdaptiveExtension()中</span><br><span class="line">    - 1.先尝试从cachedAdaptiveInstance缓存中获取adaptive对象</span><br><span class="line">    - 2.在1中获取不到,则createAdaptiveExtension()创建adaptive对象并缓存起来</span><br><span class="line">        - ExtensionLoader.createAdaptiveExtension()中</span><br><span class="line">        - 1.(T) getAdaptiveExtensionClass().newInstance()</span><br><span class="line">            获取adaptive拓展类</span><br><span class="line">            - ExtensionLoader.getAdaptiveExtensionClass()中</span><br><span class="line">            - 1.getExtensionClasses()</span><br><span class="line">                获取所有拓展实现类</span><br><span class="line">                - ExtensionLoader.getExtensionClasses()中</span><br><span class="line">                - 1.尝试从cachedClasses中获取拓展实现类数组</span><br><span class="line">                - 2.获取不到则classes &#x3D; loadExtensionClasses()从配置文件中加载拓展实现类列表并缓存</span><br><span class="line">                    - ExtensionLoader.loadExtensionClasses()中</span><br><span class="line">                    - 1.从接口,如Protocol接口上获取@SPI注解的value属性值,如 &#96;@SPI(&quot;dubbo&quot;),value&#96; 就是 dubbo,作为默认拓展名</span><br><span class="line">                    - 2.分别从META-INF&#x2F;dubbo&#x2F;internal&#x2F;,META-INF&#x2F;dubbo&#x2F;,META-INF&#x2F;services&#x2F;路径下读取配置文件,加载拓展实现类列表</span><br><span class="line">                        - ExtensionLoader.loadFile()中</span><br><span class="line">                        - 1.根据文件名用类加载器获取urls数组</span><br><span class="line">                        - 2.遍历urls数组,用流一行行读取配置文件</span><br><span class="line">                        - 3.1.根据配置的类名创建Class对象</span><br><span class="line">                        - 3.2.判断class上是否含有@Adaptive注解.若有,缓存到cachedAdaptiveClass中</span><br><span class="line">                        - 3.3.若实现类中没有@Adaptive注解</span><br><span class="line">                        - 3.3.1.判断实现类是否存在入参为接口的构造器(比如ProtocolFilterWrapper类是否还有入参为Protocol接口的构造器,public ProtocolFilterWrapper(Protocol protocol),若有的话说明它是Wrapper类),添加到wrappers中</span><br><span class="line">                        - 3.3.2.既不是适配对象(@Adaptive),也不是wrapped的对象,那就是扩展点的具体实现对象,可以有多个.缓存到cachedNames和extensionClasses中,分别为class -&gt; name 的映射 和 name -&gt; class 的映射</span><br><span class="line">            - 2.在1中,若配置的类上有@Adaptive注解,则缓存到cachedAdaptiveClass中.此处取到直接返回cachedAdaptiveClass.若没有adaptive类,则走下面生成adaptive类</span><br><span class="line">            - 3.createAdaptiveExtensionClass()</span><br><span class="line">                自动生成自适应拓展的代码实现,并编译后返回该类</span><br><span class="line">                - ExtensionLoader.createAdaptiveExtensionClass()中</span><br><span class="line">                - 1.createAdaptiveExtensionClassCode()</span><br><span class="line">                    生成Adaptive类的代码code</span><br><span class="line">                - 2.利用dubbo的SPI扩展机制获取Compiler的适配类,此处为AdaptiveCompiler对象</span><br><span class="line">                - 3.compiler.compile(code, classLoader)编译上面生成的adaptive代码</span><br><span class="line">                    - AdaptiveCompiler.compile()中</span><br><span class="line">                    - 1.compiler &#x3D; loader.getDefaultExtension()获得默认的 Compiler 拓展对象</span><br><span class="line">                    - 2.compiler.compile(code, classLoader)编译类</span><br><span class="line">                        - AbstractCompiler.compile()</span><br><span class="line">                            - JavassistCompiler.doCompile()</span><br><span class="line">                - 4.返回编译后的class</span><br><span class="line">        - 2.injectExtension()</span><br><span class="line">            注入依赖</span><br><span class="line">            - &#x2F;&#x2F; 参见SPI IOC 流程</span><br><span class="line">        - 3.创建 Wrapper 拓展对象</span><br><span class="line">            - &#x2F;&#x2F; 参见SPI AOP流程</span><br><span class="line">    - 3.返回adaptive对象</span><br></pre></td></tr></table></figure>
+<h1 id="根据name获取拓展点对象的流程"><a href="#根据name获取拓展点对象的流程" class="headerlink" title="根据name获取拓展点对象的流程"></a>根据name获取拓展点对象的流程</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">- Protocol dubboProtocol &#x3D; loader.getExtension(&quot;dubbo&quot;);</span><br><span class="line">      返回指定名字的扩展对象</span><br><span class="line">    - ExtensionLoader.getExtension(name)中</span><br><span class="line">    - 1.从cachedInstances获取对应的拓展对象</span><br><span class="line">    - 2.若获取不到,创建Holder对象,并缓存</span><br><span class="line">    - 3.通过instance &#x3D; createExtension(name)填充holder.value属性</span><br><span class="line">        - 1.之前的从配置文件中加载拓展类的逻辑</span><br><span class="line">        - 2.缓存到EXTENSION_INSTANCES中</span><br><span class="line">        - 3.注入依赖的属性injectExtension(instance)</span><br><span class="line">            - ExtensionLoader.injectExtension()中</span><br><span class="line">            - 1.遍历class中的所有方法找到setter方法</span><br><span class="line">            - 2.对于每一个setter方法&#x2F;&#x2F; 参见SPI IOC流程</span><br></pre></td></tr></table></figure>
+<h1 id="objectFactory-创建的逻辑"><a href="#objectFactory-创建的逻辑" class="headerlink" title="objectFactory 创建的逻辑"></a>objectFactory 创建的逻辑</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">- objectFactory(即AdaptiveExtensionFactory)创建的逻辑</span><br><span class="line">    - 在ExtensionLoader的构造方法中会判断当前传入的对象类型</span><br><span class="line">    - 1.如果type是ExtensionFactory类型,则objectFactory设为null</span><br><span class="line">    - 2.type不是ExtensionFactory类型,则会创建ExtensionFactory objectFactory用于后面给 拓展对象 注入依赖的属性</span><br><span class="line">        - 1.从配置文件中获取adaptive类的逻辑</span><br><span class="line">        - 2.AdaptiveExtensionFactory构造器中</span><br><span class="line">        - 获取ExtensionFactory的ExtensionLoader,用loader获取支持的extensions,此处为SPIExtensionFactory和SpringExtensionFactory</span><br></pre></td></tr></table></figure>
+<h1 id="SPI-IOC-流程"><a href="#SPI-IOC-流程" class="headerlink" title="SPI IOC 流程"></a>SPI IOC 流程</h1><p>ExtensionLoader.injectExtension()这个方法中,会通过IOC机制注入拓展点对象的依赖.<br><img src="https://gitee.com/flyingzc/MyImg/raw/master/img/dubbo/2019-11-28-11-03-56.png" alt="ExtensionLoader.injectExtension()被调用的地方"><br>查看调用发现,在创建拓展对象 和 创建自适应拓展对象 时,都会调用该方法完成依赖注入.</p>
+<p>原理就是:<br>遍历当前对象的所有方法,找出setter方法,获取参数名和参数类型.通过 ExtensionFactory 去完成依赖注入.<br>ExtensionFactory 在之前 ExtensionLoader 创建时使用的是 AdaptiveExtensionFactory 的实现.<br>AdaptiveExtensionFactory 会调用 SPIExtensionFactory 去获取依赖的拓展对象.<br>SPIExtensionFactory 给当前拓展点对象注入的均是 adaptiveExtension,这样在运行期可以动态切换依赖的具体实现.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- AdaptiveExtensionFactory注入依赖的流程</span><br><span class="line">    - 当有实例调用injectExtension(instance)要注入依赖时,会遍历这个对象里的所有方法,找出setter方法,如 setXxx(X xxx) 则传入参数类型 和 参数名</span><br><span class="line">    - AdaptiveExtensionFactory.getExtension(type, name)中</span><br><span class="line">        - 1.遍历SPIExtensionFactory和SpringExtensionFactory</span><br><span class="line">        - 2.factory.getExtension(type, name)获取该属性的extension</span><br><span class="line">            - SPIExtensionFactory.getExtension(type, name)中</span><br><span class="line">            - 1.类型必须是接口且有@SPI注解,才会通过ExtensionLoader加载adaptiveExtension拓展,否则返回null</span><br><span class="line">    - 如果有adaptiveExtension拓展,则反射调用setter方法注入</span><br></pre></td></tr></table></figure>
+<p>SpiExtensionFactory.getExtension(type, name)代码如下:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> &lt;T&gt; <span class="function">T <span class="title">getExtension</span><span class="params">(Class&lt;T&gt; type, String name)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (type.isInterface() &amp;&amp; type.isAnnotationPresent(SPI<span class="class">.<span class="keyword">class</span>)) </span>&#123; <span class="comment">// 接口类型 且 有@SPI注解</span></span><br><span class="line">        <span class="comment">// 加载拓展接口对应的 ExtensionLoader 对象</span></span><br><span class="line">        ExtensionLoader&lt;T&gt; loader = ExtensionLoader.getExtensionLoader(type);</span><br><span class="line">        <span class="comment">// 加载拓展对象</span></span><br><span class="line">        <span class="keyword">if</span> (!loader.getSupportedExtensions().isEmpty()) &#123;</span><br><span class="line">            <span class="keyword">return</span> loader.getAdaptiveExtension();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h1 id="SPI-AOP-流程"><a href="#SPI-AOP-流程" class="headerlink" title="SPI AOP 流程"></a>SPI AOP 流程</h1><p>在 ExtensionLoader.createExtension(name) 方法中,根据 name 获取到拓展点实现类 并 通过 injectExtension() 完成依赖注入后,会创建 Wrapper 对象.<br>就是获取当前对象的所有wrapper(这些wapper是在读取配置文件时判断有参数为对应的接口类型的构造器 来添加的),然后调用有参构造器一层一层的通过injectExtension()包装起来.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">- SPI AOP流程</span><br><span class="line">    - 1.遍历从配置文件中加载的wrapperClasses</span><br><span class="line">    - 2.1.使用带参的构造器创建Wrapper对象</span><br><span class="line">    - 2.2.使用wrapper对象调用injectExtension()返回instance</span><br><span class="line">    - 2.3.每遍历一次,就将wapper对象嵌套了一层</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">- SPI @Activate缓存到cachedActivates流程</span><br><span class="line">    - ExtensionLoader.loadFile()里判断类上有Activate注解,则添加到缓存中.</span><br></pre></td></tr></table></figure>
+<p>ExtensionLoader.createExtension(name) 代码如下:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> T <span class="title">createExtension</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 1.获得拓展名对应的拓展实现类</span></span><br><span class="line">    Class&lt;?&gt; clazz = getExtensionClasses().get(name);</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2.注入依赖的属性</span></span><br><span class="line">    injectExtension(instance);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 3.创建 Wrapper 拓展对象</span></span><br><span class="line">    Set&lt;Class&lt;?&gt;&gt; wrapperClasses = cachedWrapperClasses;</span><br><span class="line">    <span class="keyword">if</span> (wrapperClasses != <span class="keyword">null</span> &amp;&amp; !wrapperClasses.isEmpty()) &#123;<span class="comment">// 先实例化扩展点的实现,再判断此时是否有此扩展点的包装类缓存,有的话利用wrapper增强这个扩展点实现的功能</span></span><br><span class="line">        <span class="keyword">for</span> (Class&lt;?&gt; wrapperClass : wrapperClasses) &#123;</span><br><span class="line">            <span class="comment">// 包装</span></span><br><span class="line">            instance = injectExtension((T) wrapperClass.getConstructor(type).newInstance(instance)); <span class="comment">// 包装后又赋值给 instance,所以最终 Wrapper 是一层层嵌套的</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> instance;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h1 id="SPI-Activate流程"><a href="#SPI-Activate流程" class="headerlink" title="SPI @Activate流程"></a>SPI @Activate流程</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">- SPI @Activate流程</span><br><span class="line">    - ExtensionLoader.getActivateExtension(url, values, group)</span><br><span class="line">    - 1.通过getExtensionClasses()获得拓展实现类列表</span><br><span class="line">    - 2.遍历cachedActivates</span><br><span class="line">    - 2.1.isMatchGroup()判断activate对象的group配置是否和传入的group匹配</span><br><span class="line">    - 2.2.若上一步匹配,则通过getExtension(name)获得拓展对象</span><br><span class="line">    - 2.3.判断传入的names是否匹配,isActive(activate, url)通过activate.value值判断是否激活</span><br><span class="line">    - 2.4.若上面条件都满足,添加到list里,并通过ActivateComparator给activate列表排序</span><br><span class="line">        - ActivateComparator.compare()排序逻辑</span><br><span class="line">        - 1.获取比较的两个类上的Activate注解,通过before或after属性进行排序</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* Get activate extensions.</span></span><br><span class="line"><span class="comment">*</span></span><br><span class="line"><span class="comment">* 获得符合自动激活条件的拓展对象数组</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> List&lt;T&gt; <span class="title">getActivateExtension</span><span class="params">(URL url, String[] values, String group)</span> </span>&#123;</span><br><span class="line">    List&lt;T&gt; exts = <span class="keyword">new</span> ArrayList&lt;T&gt;();</span><br><span class="line">    List&lt;String&gt; names = values == <span class="keyword">null</span> ? <span class="keyword">new</span> ArrayList&lt;String&gt;(<span class="number">0</span>) : Arrays.asList(values);</span><br><span class="line">    <span class="keyword">if</span> (!names.contains(Constants.REMOVE_VALUE_PREFIX + Constants.DEFAULT_KEY)) &#123;</span><br><span class="line">        <span class="comment">// 获得拓展实现类列表</span></span><br><span class="line">        getExtensionClasses();</span><br><span class="line">        <span class="keyword">for</span> (Map.Entry&lt;String, Activate&gt; entry : cachedActivates.entrySet()) &#123; <span class="comment">// 遍历 cachedActivates</span></span><br><span class="line">            String name = entry.getKey();</span><br><span class="line">            Activate activate = entry.getValue();</span><br><span class="line">            <span class="keyword">if</span> (isMatchGroup(group, activate.group())) &#123; <span class="comment">// 匹配分组</span></span><br><span class="line">                <span class="comment">// 获得拓展对象</span></span><br><span class="line">                T ext = getExtension(name);</span><br><span class="line">                <span class="keyword">if</span> (!names.contains(name)</span><br><span class="line">                        &amp;&amp; !names.contains(Constants.REMOVE_VALUE_PREFIX + name)</span><br><span class="line">                        &amp;&amp; isActive(activate, url)) &#123; <span class="comment">// 判断是否激活</span></span><br><span class="line">                    exts.add(ext);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 排序</span></span><br><span class="line">        Collections.sort(exts, ActivateComparator.COMPARATOR);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="keyword">return</span> exts;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Dubbo/" rel="tag"># Dubbo</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/11/26/01no/dubbo/dubbo01-overview/" rel="next" title="Dubbo整理">
+                <i class="fa fa-chevron-left"></i> Dubbo整理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/11/29/01no/tomcat/tomcat01_debug/" rel="prev" title="Tomcat Debug">
+                Tomcat Debug <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/zc-icon.jpeg"
+                alt="flyingzc" />
+            
+              <p class="site-author-name" itemprop="name">flyingzc</p>
+              <p class="site-description motion-element" itemprop="description">不积跬步无以至千里<br/>不积小流无以成江海</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#SPI机制"><span class="nav-number">1.</span> <span class="nav-text">SPI机制</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#SPI-作用"><span class="nav-number">1.1.</span> <span class="nav-text">SPI 作用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Dubbo-实现的-SPI-与-JDK-自带的-SPI-的区别"><span class="nav-number">1.2.</span> <span class="nav-text">Dubbo 实现的 SPI 与 JDK 自带的 SPI 的区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SPI-配置和使用"><span class="nav-number">1.3.</span> <span class="nav-text">SPI 配置和使用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Dubbo-拓展点加载机制相关注解和组件"><span class="nav-number">1.4.</span> <span class="nav-text">Dubbo 拓展点加载机制相关注解和组件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#SPI-注解"><span class="nav-number">1.4.1.</span> <span class="nav-text">@SPI 注解</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Adaptive-注解"><span class="nav-number">1.4.2.</span> <span class="nav-text">@Adaptive 注解</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Activate-注解"><span class="nav-number">1.4.3.</span> <span class="nav-text">@Activate 注解</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Wrapper"><span class="nav-number">1.4.4.</span> <span class="nav-text">Wrapper</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ExtensionLoader"><span class="nav-number">1.4.5.</span> <span class="nav-text">ExtensionLoader</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#获取-ExtensionLoader-流程"><span class="nav-number">2.</span> <span class="nav-text">获取 ExtensionLoader 流程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#获取-AdaptiveExtension-流程"><span class="nav-number">3.</span> <span class="nav-text">获取 AdaptiveExtension 流程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#根据name获取拓展点对象的流程"><span class="nav-number">4.</span> <span class="nav-text">根据name获取拓展点对象的流程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#objectFactory-创建的逻辑"><span class="nav-number">5.</span> <span class="nav-text">objectFactory 创建的逻辑</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#SPI-IOC-流程"><span class="nav-number">6.</span> <span class="nav-text">SPI IOC 流程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#SPI-AOP-流程"><span class="nav-number">7.</span> <span class="nav-text">SPI AOP 流程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#SPI-Activate流程"><span class="nav-number">8.</span> <span class="nav-text">SPI @Activate流程</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">flyingzc</span>
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+<!--网站运行时间-->
+<span id="sitetime"></span>
+<script language=javascript>
+  function siteTime() {
+    window.setTimeout("siteTime()", 1000);
+    var seconds = 1000;
+    var minutes = seconds * 60;
+    var hours = minutes * 60;
+    var days = hours * 24;
+    var years = days * 365;
+    var today = new Date();
+    var todayYear = today.getFullYear();
+    var todayMonth = today.getMonth()+1;
+    var todayDate = today.getDate();
+    var todayHour = today.getHours();
+    var todayMinute = today.getMinutes();
+    var todaySecond = today.getSeconds();
+    /* Date.UTC() -- 返回date对象距世界标准时间(UTC)1970年1月1日午夜之间的毫秒数(时间戳)
+    year - 作为date对象的年份，为4位年份值
+    month - 0-11之间的整数，做为date对象的月份
+    day - 1-31之间的整数，做为date对象的天数
+    hours - 0(午夜24点)-23之间的整数，做为date对象的小时数
+    minutes - 0-59之间的整数，做为date对象的分钟数
+    seconds - 0-59之间的整数，做为date对象的秒数
+    microseconds - 0-999之间的整数，做为date对象的毫秒数 */
+    var t1 = Date.UTC(2020,03,14,00,00,00); // 这里调整博客建站时间，时间：2019-05-14 00:00:00
+    var t2 = Date.UTC(todayYear,todayMonth,todayDate,todayHour,todayMinute,todaySecond);
+    var diff = t2-t1;
+    var diffYears = Math.floor(diff/years);
+    var diffDays = Math.floor((diff/days)-diffYears*365);
+    var diffHours = Math.floor((diff-(diffYears*365+diffDays)*days)/hours);
+    var diffMinutes = Math.floor((diff-(diffYears*365+diffDays)*days-diffHours*hours)/minutes);
+    var diffSeconds = Math.floor((diff-(diffYears*365+diffDays)*days-diffHours*hours-diffMinutes*minutes)/seconds);
+    document.getElementById("sitetime").innerHTML=" 已运行 "+/*diffYears+" 年 "+*/diffDays+" 天 "+diffHours+" 小时 "+diffMinutes+" 分钟 "+diffSeconds+" 秒";
+  }
+  siteTime();
+</script>
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/click-love.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'KJfwqYdjPEntCa9nSuFk59FG-gzGzoHsz',
+        appKey: 'R65YXNgdIqdaW4pYtQaTcVnG',
+        placeholder: 'ヾﾉ≧∀≦)',
+        avatar:'/images/zc-icon.jpeg',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("KJfwqYdjPEntCa9nSuFk59FG-gzGzoHsz", "R65YXNgdIqdaW4pYtQaTcVnG");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"log":false,"pluginJsPath":"lib/","pluginModelPath":"assets/","pluginRootPath":"live2dw/","tagMode":false});</script></body>
+</html>
