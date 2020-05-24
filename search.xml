@@ -175,31 +175,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Tomcat实现分布式session</title>
-    <url>/2019/12/20/01no/tomcat/tomcat04-distribute-session/</url>
-    <content><![CDATA[<h1 id="tomcat实现分布式session"><a href="#tomcat实现分布式session" class="headerlink" title="tomcat实现分布式session"></a>tomcat实现分布式session</h1><p>tomcat-redis-session-manager</p>
-<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><p>Copy the following files into the TOMCAT_BASE/lib directory:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">tomcat-redis-session-manager-VERSION.jar</span><br><span class="line">jedis-2.5.2.jar</span><br><span class="line">commons-pool2-2.2.jar</span><br></pre></td></tr></table></figure>
-<p>配置 TOMCAT_HOME/conf/context.xml<br><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">Valve</span> <span class="attr">className</span>=<span class="string">"com.radiadesign.catalina.session.RedisSessionHandlerValve"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">Manager</span> <span class="attr">className</span>=<span class="string">"com.radiadesign.catalina.session.RedisSessionManager"</span></span></span><br><span class="line"><span class="tag">         <span class="attr">host</span>=<span class="string">"localhost"</span>   </span></span><br><span class="line"><span class="tag">         <span class="attr">port</span>=<span class="string">"6379"</span> <span class="attr">database</span>=<span class="string">"0"</span> </span></span><br><span class="line"><span class="tag">         <span class="attr">maxInactiveInterval</span>=<span class="string">"30"</span> /&gt;</span></span><br></pre></td></tr></table></figure></p>
-<p>mvn 里搜 Tomcat Redis Session Manager<br><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!-- https://mvnrepository.com/artifact/com.bluejeans/tomcat-redis-session-manager --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.bluejeans<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>tomcat-redis-session-manager<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.0.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
-<h2 id="相关类"><a href="#相关类" class="headerlink" title="相关类"></a>相关类</h2><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">RedisSessionHandlerValve</span><br><span class="line"></span><br><span class="line">RedisSession</span><br><span class="line"></span><br><span class="line">RedisSessionManager</span><br><span class="line"></span><br><span class="line">JavaSerializer</span><br><span class="line"></span><br><span class="line">DeserializedSessionContainer</span><br><span class="line"></span><br><span class="line">Serializer</span><br><span class="line"></span><br><span class="line">SessionSerializationMetadata</span><br></pre></td></tr></table></figure>
-<p>其中 RedisSessionHandlerValve 是在 context 层配置的 value.</p>
-<p>RedisSessionManager 继承自 tomcat 的 ManagerBase,实现 Lifecycle 接口.</p>
-<p>RedisSession 继承自 tomcat 的 StandardSession.</p>
-<h2 id="RedisSessionHandlerValve-对-session-的处理"><a href="#RedisSessionHandlerValve-对-session-的处理" class="headerlink" title="RedisSessionHandlerValve 对 session 的处理"></a>RedisSessionHandlerValve 对 session 的处理</h2><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">- RedisSessionHandlerValve.invoke()</span><br><span class="line">- 1.调用后续value.invoke()</span><br><span class="line">- 2.RedisSessionManager.afterRequest()</span><br><span class="line">    - 1.从ThreadLocal中取出当前线程对应的redisSession</span><br><span class="line">    - 2.若有,则复用父类StandardSession.isValid()判断session是否失效</span><br><span class="line">    - 2.1.若未失效,则save()保存session到redis</span><br><span class="line">        - 若SessionPersistPolicy即session持久化策略为ALWAYS_SAVE_AFTER_REQUEST,则通过jedis获取连接,将redisSession序列化成sessionAttributesHash.</span><br><span class="line">        最终存入redis的key是sessionId,value是序列化后的updatedSerializationMetadata.</span><br><span class="line">        设置key的失效时间为session的最大失效时间 jedis.expire(binaryId, getMaxInactiveInterval())</span><br><span class="line">    - 2.2.若session失效,则从redis中remove()掉session</span><br><span class="line">        - 通过jedis.del(session.getId())删除session</span><br></pre></td></tr></table></figure>
-<h2 id="相关操作"><a href="#相关操作" class="headerlink" title="相关操作"></a>相关操作</h2><p>getSession() 从 redis 中 获取, createSession() 存入 redis.</p>
-<p>load() 和 unload() 都是 空逻辑,因为生命周期交给redis管理了.</p>
-<p>session清理 也不需要做了,向redis中存入key的时候已经设置了key的失效时间.</p>
-<h2 id="see"><a href="#see" class="headerlink" title="@see"></a>@see</h2><p><a href="https://github.com/jcoleman/tomcat-redis-session-manager.git" target="_blank" rel="noopener">tomcat-redis-session-manager github</a></p>
-]]></content>
-      <categories>
-        <category>Tomcat</category>
-      </categories>
-      <tags>
-        <tag>Tomcat</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Tomcat Session机制</title>
     <url>/2019/12/20/01no/tomcat/tomcat03-session/</url>
     <content><![CDATA[<h1 id="tomcat-session"><a href="#tomcat-session" class="headerlink" title="tomcat session"></a>tomcat session</h1><h2 id="相关类"><a href="#相关类" class="headerlink" title="相关类"></a>相关类</h2><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">org.apache.catalina.Manager</span><br><span class="line"></span><br><span class="line">StandardManager</span><br><span class="line"></span><br><span class="line">SessionIdGenerator</span><br></pre></td></tr></table></figure>
@@ -221,6 +196,31 @@
 <li><p>request.getSession()时,若创建 session,会在 StandardSession.setCreationTime()里更新 thisAccessedTime.若是获取session,会在 StandardSession.access() 里更新 thisAccessedTime 为 当前时间.</p>
 </li>
 </ol>
+]]></content>
+      <categories>
+        <category>Tomcat</category>
+      </categories>
+      <tags>
+        <tag>Tomcat</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Tomcat实现分布式session</title>
+    <url>/2019/12/20/01no/tomcat/tomcat04-distribute-session/</url>
+    <content><![CDATA[<h1 id="tomcat实现分布式session"><a href="#tomcat实现分布式session" class="headerlink" title="tomcat实现分布式session"></a>tomcat实现分布式session</h1><p>tomcat-redis-session-manager</p>
+<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><p>Copy the following files into the TOMCAT_BASE/lib directory:</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">tomcat-redis-session-manager-VERSION.jar</span><br><span class="line">jedis-2.5.2.jar</span><br><span class="line">commons-pool2-2.2.jar</span><br></pre></td></tr></table></figure>
+<p>配置 TOMCAT_HOME/conf/context.xml<br><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">Valve</span> <span class="attr">className</span>=<span class="string">"com.radiadesign.catalina.session.RedisSessionHandlerValve"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">Manager</span> <span class="attr">className</span>=<span class="string">"com.radiadesign.catalina.session.RedisSessionManager"</span></span></span><br><span class="line"><span class="tag">         <span class="attr">host</span>=<span class="string">"localhost"</span>   </span></span><br><span class="line"><span class="tag">         <span class="attr">port</span>=<span class="string">"6379"</span> <span class="attr">database</span>=<span class="string">"0"</span> </span></span><br><span class="line"><span class="tag">         <span class="attr">maxInactiveInterval</span>=<span class="string">"30"</span> /&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>mvn 里搜 Tomcat Redis Session Manager<br><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!-- https://mvnrepository.com/artifact/com.bluejeans/tomcat-redis-session-manager --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.bluejeans<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>tomcat-redis-session-manager<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.0.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<h2 id="相关类"><a href="#相关类" class="headerlink" title="相关类"></a>相关类</h2><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">RedisSessionHandlerValve</span><br><span class="line"></span><br><span class="line">RedisSession</span><br><span class="line"></span><br><span class="line">RedisSessionManager</span><br><span class="line"></span><br><span class="line">JavaSerializer</span><br><span class="line"></span><br><span class="line">DeserializedSessionContainer</span><br><span class="line"></span><br><span class="line">Serializer</span><br><span class="line"></span><br><span class="line">SessionSerializationMetadata</span><br></pre></td></tr></table></figure>
+<p>其中 RedisSessionHandlerValve 是在 context 层配置的 value.</p>
+<p>RedisSessionManager 继承自 tomcat 的 ManagerBase,实现 Lifecycle 接口.</p>
+<p>RedisSession 继承自 tomcat 的 StandardSession.</p>
+<h2 id="RedisSessionHandlerValve-对-session-的处理"><a href="#RedisSessionHandlerValve-对-session-的处理" class="headerlink" title="RedisSessionHandlerValve 对 session 的处理"></a>RedisSessionHandlerValve 对 session 的处理</h2><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">- RedisSessionHandlerValve.invoke()</span><br><span class="line">- 1.调用后续value.invoke()</span><br><span class="line">- 2.RedisSessionManager.afterRequest()</span><br><span class="line">    - 1.从ThreadLocal中取出当前线程对应的redisSession</span><br><span class="line">    - 2.若有,则复用父类StandardSession.isValid()判断session是否失效</span><br><span class="line">    - 2.1.若未失效,则save()保存session到redis</span><br><span class="line">        - 若SessionPersistPolicy即session持久化策略为ALWAYS_SAVE_AFTER_REQUEST,则通过jedis获取连接,将redisSession序列化成sessionAttributesHash.</span><br><span class="line">        最终存入redis的key是sessionId,value是序列化后的updatedSerializationMetadata.</span><br><span class="line">        设置key的失效时间为session的最大失效时间 jedis.expire(binaryId, getMaxInactiveInterval())</span><br><span class="line">    - 2.2.若session失效,则从redis中remove()掉session</span><br><span class="line">        - 通过jedis.del(session.getId())删除session</span><br></pre></td></tr></table></figure>
+<h2 id="相关操作"><a href="#相关操作" class="headerlink" title="相关操作"></a>相关操作</h2><p>getSession() 从 redis 中 获取, createSession() 存入 redis.</p>
+<p>load() 和 unload() 都是 空逻辑,因为生命周期交给redis管理了.</p>
+<p>session清理 也不需要做了,向redis中存入key的时候已经设置了key的失效时间.</p>
+<h2 id="see"><a href="#see" class="headerlink" title="@see"></a>@see</h2><p><a href="https://github.com/jcoleman/tomcat-redis-session-manager.git" target="_blank" rel="noopener">tomcat-redis-session-manager github</a></p>
 ]]></content>
       <categories>
         <category>Tomcat</category>
