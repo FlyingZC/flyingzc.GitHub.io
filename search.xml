@@ -929,38 +929,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Zookeeper应用</title>
-    <url>/2019/05/07/01no/zk/zk07_useage/</url>
-    <content><![CDATA[<h2 id="dubbo中zk的应用"><a href="#dubbo中zk的应用" class="headerlink" title="dubbo中zk的应用"></a>dubbo中zk的应用</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">在zk中创建的节点路径</span><br><span class="line">dubbo</span><br><span class="line">    com.alibaba.demo.DemoService [服务名,service]</span><br><span class="line">        configurators</span><br><span class="line">        consumers [类型,type,生产者消费者]</span><br><span class="line">            ...</span><br><span class="line">        providers</span><br><span class="line">            ... [url]</span><br><span class="line">        routers</span><br></pre></td></tr></table></figure>
-<p>其中接口(service)下会有四个子节点providers, consumers, routers, configurators</p>
-<p>其中dubbo、接口、providers都是持久化节点，只有url是临时节点。当会话消失(服务器断开与zookeeper的连接)，对应的临时节点会被删除。</p>
-<p>dubbo-registry-zookeeper模块中, ZookeeperRegistry 类继承自 FailbackRegistry.<br>构造方法中通过 ZookeeperTransporter.connect(url)连接到zookeeper.</p>
-<p>1.服务提供者进行服务暴露时,会注册到注册中心注册自己<br>2.父类 FailbackRegistry 失败重试<br>3.服务消费者进行服务引用时,会注册自己并且订阅 所有服务提供者.消费者会订阅接口下的 providers 的所有子节点。一旦 providers 下的子节点发生改变，就会通知消息给消费者。</p>
-<p>父类 FailbackRegistry 支持失败重试<br>起一个定时任务,遍历 失败发起注册失败的 URL 集合,向zk注册(创建节点)</p>
-<p>dubbo-remoting-zookeeper模块中,提供zk传输的支持<br>ZookeeperTransporter提供了 ZkClient 和 Curator 两种实现.</p>
-<p>消费者引用服务 或 提供者暴露服务时,会往zookeeper上注册节点<br>主要做了以下几步： </p>
-<ol>
-<li>记录注册注册地址 </li>
-<li>注册节点到zookeeper上 </li>
-<li>捕捉错误信息，出错则记录下来，等待定期器去重新执行</li>
-</ol>
-<h3 id="发布"><a href="#发布" class="headerlink" title="发布"></a>发布</h3><p>provider注册<br>RegistryProtocol.export()中<br>1.获得注册中心对象,启动并连接zk</p>
-<p>2.向注册中心订阅服务消费者</p>
-<p>3.向注册中心注册服务提供者(自己),其实就是在zk中创建该提供者的持久化节点 /dubbo/com.alibaba.dubbo.demo.DemoService/providers/…<br>然后注册监听器</p>
-<p>AbstractRegistry构造方法中<br>加载本地配置文件 dubbo-registry-demo-provider-127.0.0.1:2181.cache</p>
-<p>FallbackRegistry构造方法中<br>创建重试定时任务并启动</p>
-<p>ZookeeperRegistry构造方法中<br>连接zk<br>zkClient.addStateListener().该监听器在重连时,调用 recover() 恢复方法</p>
-<h3 id="订阅"><a href="#订阅" class="headerlink" title="订阅"></a>订阅</h3><p>消费者订阅 和 生产者发布 类似</p>
-<h3 id="通知"><a href="#通知" class="headerlink" title="通知"></a>通知</h3><p>notify()时会将zk节点信息写入到缓存,根据配置的策略选择直接保存文件还是用1个线程异步保存文件.</p>
-]]></content>
-      <categories>
-        <category>Zookeeper</category>
-      </categories>
-      <tags>
-        <tag>Zookeeper</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Zookeeper事务日志，快照</title>
     <url>/2019/05/07/01no/zk/zk06_snapshot_txnlog/</url>
     <content><![CDATA[<h2 id="ZKDataBase结构"><a href="#ZKDataBase结构" class="headerlink" title="ZKDataBase结构"></a>ZKDataBase结构</h2><p>ZKDataBase(zk内存数据库)<br>    – sessionWithTimeouts(zk所有会话  会话超时时间记录器)<br>    – DataTree存储<br>    – 事务日志</p>
@@ -1015,6 +983,38 @@
 <li>事务id小于该 zxid_for_snap 的那个最新的事务日志(比如在往这个事务文件里写事务日志,写着写着进行了快照操作,但是由于这个事务日志还没写满,所以会接着往这里面写事务日志)</li>
 </ol>
 <h2 id="配置项-zookeeper-snapCount"><a href="#配置项-zookeeper-snapCount" class="headerlink" title="配置项 zookeeper.snapCount"></a>配置项 zookeeper.snapCount</h2><p>zookeeper.snapCount 必须 &gt;= 2,若小于2会被置为2,默认不配置则取 10,0000</p>
+]]></content>
+      <categories>
+        <category>Zookeeper</category>
+      </categories>
+      <tags>
+        <tag>Zookeeper</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Zookeeper应用</title>
+    <url>/2019/05/07/01no/zk/zk07_useage/</url>
+    <content><![CDATA[<h2 id="dubbo中zk的应用"><a href="#dubbo中zk的应用" class="headerlink" title="dubbo中zk的应用"></a>dubbo中zk的应用</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">在zk中创建的节点路径</span><br><span class="line">dubbo</span><br><span class="line">    com.alibaba.demo.DemoService [服务名,service]</span><br><span class="line">        configurators</span><br><span class="line">        consumers [类型,type,生产者消费者]</span><br><span class="line">            ...</span><br><span class="line">        providers</span><br><span class="line">            ... [url]</span><br><span class="line">        routers</span><br></pre></td></tr></table></figure>
+<p>其中接口(service)下会有四个子节点providers, consumers, routers, configurators</p>
+<p>其中dubbo、接口、providers都是持久化节点，只有url是临时节点。当会话消失(服务器断开与zookeeper的连接)，对应的临时节点会被删除。</p>
+<p>dubbo-registry-zookeeper模块中, ZookeeperRegistry 类继承自 FailbackRegistry.<br>构造方法中通过 ZookeeperTransporter.connect(url)连接到zookeeper.</p>
+<p>1.服务提供者进行服务暴露时,会注册到注册中心注册自己<br>2.父类 FailbackRegistry 失败重试<br>3.服务消费者进行服务引用时,会注册自己并且订阅 所有服务提供者.消费者会订阅接口下的 providers 的所有子节点。一旦 providers 下的子节点发生改变，就会通知消息给消费者。</p>
+<p>父类 FailbackRegistry 支持失败重试<br>起一个定时任务,遍历 失败发起注册失败的 URL 集合,向zk注册(创建节点)</p>
+<p>dubbo-remoting-zookeeper模块中,提供zk传输的支持<br>ZookeeperTransporter提供了 ZkClient 和 Curator 两种实现.</p>
+<p>消费者引用服务 或 提供者暴露服务时,会往zookeeper上注册节点<br>主要做了以下几步： </p>
+<ol>
+<li>记录注册注册地址 </li>
+<li>注册节点到zookeeper上 </li>
+<li>捕捉错误信息，出错则记录下来，等待定期器去重新执行</li>
+</ol>
+<h3 id="发布"><a href="#发布" class="headerlink" title="发布"></a>发布</h3><p>provider注册<br>RegistryProtocol.export()中<br>1.获得注册中心对象,启动并连接zk</p>
+<p>2.向注册中心订阅服务消费者</p>
+<p>3.向注册中心注册服务提供者(自己),其实就是在zk中创建该提供者的持久化节点 /dubbo/com.alibaba.dubbo.demo.DemoService/providers/…<br>然后注册监听器</p>
+<p>AbstractRegistry构造方法中<br>加载本地配置文件 dubbo-registry-demo-provider-127.0.0.1:2181.cache</p>
+<p>FallbackRegistry构造方法中<br>创建重试定时任务并启动</p>
+<p>ZookeeperRegistry构造方法中<br>连接zk<br>zkClient.addStateListener().该监听器在重连时,调用 recover() 恢复方法</p>
+<h3 id="订阅"><a href="#订阅" class="headerlink" title="订阅"></a>订阅</h3><p>消费者订阅 和 生产者发布 类似</p>
+<h3 id="通知"><a href="#通知" class="headerlink" title="通知"></a>通知</h3><p>notify()时会将zk节点信息写入到缓存,根据配置的策略选择直接保存文件还是用1个线程异步保存文件.</p>
 ]]></content>
       <categories>
         <category>Zookeeper</category>
